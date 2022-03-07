@@ -8,19 +8,19 @@ app.use(express.static('build'))
 app.use(cors())
 app.use(express.json())
 app.use(morgan('tiny', {
-  skip: (req, res) => req.method === 'POST'
+  skip: (req) => req.method === 'POST'
 }))
-morgan.token('data', (req, res) => {
+morgan.token('data', (req) => {
   return JSON.stringify(req.body)
 })
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :data', {
-  skip: (req, res) => req.method !== 'POST'
+  skip: (req) => req.method !== 'POST'
 }))
 
 app.get('/info', (request, response) => {
   Person.find({}).then(people => {
-      response 
-        .send(`<div>Phonebook has info for ${people.length} people</div>
+    response 
+      .send(`<div>Phonebook has info for ${people.length} people</div>
           <div>${new Date()}</div>`)
   })
 })
@@ -45,7 +45,7 @@ app.get('/api/persons/:id', (request, response, next) => {
 
 app.delete('/api/persons/:id', (request, response, next) => {
   Person.findByIdAndRemove(request.params.id)
-    .then(result => {
+    .then(() => {
       response.status(204).end()
     })
     .catch(error => next(error))
@@ -54,7 +54,7 @@ app.delete('/api/persons/:id', (request, response, next) => {
 app.post('/api/persons', (request, response, next) => {
   const body = request.body;
 
-   (async function getPeople() {
+  (async function getPeople() {
     const people = await Person.find({})
     const found = people.find(person => person.name.toLowerCase() === body.name.toLowerCase())
     if (found) {
@@ -69,8 +69,8 @@ app.post('/api/persons', (request, response, next) => {
   
     person.save()
       .then(result => {
-          response.json(result)
-        })
+        response.json(result)
+      })
       .catch(error => next(error))
   })()
 })
